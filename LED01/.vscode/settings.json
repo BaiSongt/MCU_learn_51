@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "at89c51ed2.h": "c",
+        "reg51.h": "c",
+        "8052.h": "c",
+        "stc89.h": "c",
+        "8051.h": "c",
+        "led.h": "c",
+        "nums.h": "c"
+    }
+}
