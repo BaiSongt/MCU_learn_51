@@ -29,8 +29,9 @@ void LCD1602a_init(void);                    // 初始化函数
 void LCD1602a_write_cmd(u8 cmd);             // 写指令函数
 void LCD1602a_write_data(u8 dat);            // 写数据函数
 void LCD1602a_disp_str(u8 x, u8 y, u8 *str); // x,y 位置显示字符
-void CheckBusy(void);                        // 检查忙
-void delay(u16 time);                        // 时延函数
+void LCD1602a_cicle_show(u8 y, u8 *str);
+void CheckBusy(void); // 检查忙
+void delay(u16 time); // 时延函数
 
 // ****************************
 
@@ -73,8 +74,7 @@ void LCD1602a_write_data(u8 dat)
 
 void LCD1602a_disp_str(u8 x, u8 y, u8 *str)
 {
-    u8 i = 0; // 地址增加
-
+    u8 i = 0;
     if (y > 1 || x > 16)
         return;
 
@@ -82,7 +82,7 @@ void LCD1602a_disp_str(u8 x, u8 y, u8 *str)
     {
         while (*str != '\0') // 字符串是以'\0'结尾，只要前面有内容就显示
         {
-            if (i < 16 - x && i >= 0) // 如果字符长度超过第一行显示范围，则在第一行继续显示
+            if (i < 16 - x) // 如果字符长度超过第一行显示范围，则在第一行继续显示
             {
                 LCD1602a_write_cmd(0x80 + x + i); // 第一行显示地址设置
             }
@@ -95,15 +95,14 @@ void LCD1602a_disp_str(u8 x, u8 y, u8 *str)
             i++;
         }
     }
-    else if(y == 1)// 第2行显示 y = 1
+    else if (y == 1) // 第2行显示 y = 1
     {
-        i = 0;
         while (*str != '\0')
         {
-            if (i < 16 - x && i >= 0) // 如果字符长度超过第二行显示范围，则在第二行继续显示
+            if (i < 16 - x) // 如果字符长度超过第二行显示范围，则在第二行继续显示
             {
                 // 第二行开始位置 address + 字符串起始位置 x + 当前字符位置 i = 最终字符显示位置
-                LCD1602a_write_cmd(0xc0 + i);
+                LCD1602a_write_cmd(0xc0 + i + x);
             }
             else
             {
@@ -126,7 +125,7 @@ void CheckBusy(void)
     while (1)
     {
         LCD1602a_DB = 0xFF; // 端口为输入
-        LCD1602a_E = 1;       // 高脉冲
+        LCD1602a_E = 1;     // 高脉冲
         temp = LCD1602a_DB;
         LCD1602a_E = 0;
         if ((temp & 0x80) == 0) // 检查BF位是否为0
@@ -134,6 +133,23 @@ void CheckBusy(void)
     }
 }
 
+void LCD1602a_cicle_show(u8 y, u8 *str)
+{
+    for (u8 i = 0; i <= 16; i++)
+    {
+        LCD1602a_disp_str(i, y, str);
+        delay(500);
+        LCD1602a_disp_str(i + 1, y, str);
+        delay(500);
+        LCD1602a_disp_str(i + 2, y, str);
+        delay(500);
+        LCD1602a_disp_str(i + 3, y, str);
+        delay(500);
+        LCD1602a_disp_str(i + 4, y, str);
+        delay(500);
+        // LCD1602a_write_cmd(0x01);
+    }
+}
 void delay(u16 time)
 {
     while (time--)
